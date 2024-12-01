@@ -5,28 +5,18 @@ fn main() {
 }
 
 fn solve(input: &str) -> i32 {
-    let mut a = vec![];
-    let mut b = vec![];
-    input
-        .lines()
-        .map(|line| {
-            line.split_whitespace()
-                .map(|num| num.parse::<i32>().unwrap())
-                .collect()
-        })
-        .collect::<Vec<Vec<i32>>>()
-        .iter()
-        .for_each(|nums| {
-            a.push(nums[0]);
-            b.push(nums[1]);
-        });
-    a.sort();
-    b.sort();
-    let mut result = 0;
-    for i in 0..a.len() {
-        result += (a[i] - b[i]).abs();
-    }
-    result
+    let (mut a, mut b): (Vec<i32>, Vec<i32>) =
+        input
+            .lines()
+            .fold((vec![], vec![]), |(mut a, mut b), line| {
+                let mut numbers = line.split_whitespace();
+                a.push(numbers.next().unwrap().parse().unwrap());
+                b.push(numbers.next().unwrap().parse().unwrap());
+                (a, b)
+            });
+    a.sort_unstable();
+    b.sort_unstable();
+    a.iter().zip(b).map(|(a, b)| (a - b).abs()).sum()
 }
 
 #[cfg(test)]

@@ -9,23 +9,15 @@ fn main() {
 fn solution(input: &str) -> i32 {
     let mut a = vec![];
     let mut b = HashMap::new();
-    input
-        .lines()
-        .map(|line| {
-            line.split_whitespace()
-                .map(|num| num.parse::<i32>().unwrap())
-                .collect()
-        })
-        .collect::<Vec<Vec<i32>>>()
-        .into_iter()
-        .for_each(|nums| {
-            a.push(nums[0]);
-            let temp = b.entry(nums[1]).or_insert(0);
-            *temp += 1;
-        });
-    a.sort();
-    let result = a.iter().map(|number| number * b.get(number).unwrap_or(&0));
-    result.sum()
+    input.lines().for_each(|line| {
+        let mut numbers = line.split_whitespace();
+        a.push(numbers.next().unwrap().parse::<i32>().unwrap());
+        let second_number = numbers.next().unwrap().parse::<i32>().unwrap();
+        *(b.entry(second_number).or_insert(0)) += 1;
+    });
+    a.iter()
+        .map(|number| number * b.get(number).unwrap_or(&0))
+        .sum()
 }
 
 #[cfg(test)]
