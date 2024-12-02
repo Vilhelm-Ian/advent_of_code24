@@ -6,19 +6,11 @@ fn main() {
     println!("{:?}", result);
 }
 
-fn solve(input: &str) -> i32 {
+pub fn solve(input: &str) -> i32 {
     let lines = parse(input);
     lines
         .into_iter()
-        .filter(|line| {
-            if is_valid_line(line, true) {
-                println!("o");
-                true
-            } else {
-                println!("x");
-                false
-            }
-        })
+        .filter(|line| is_valid_line(line, true))
         .count() as i32
 }
 
@@ -36,20 +28,16 @@ fn parse(input: &str) -> Vec<Vec<i32>> {
 fn is_valid_line(line: &Vec<i32>, is_first_iteration: bool) -> bool {
     let ordering = line[1].cmp(&line[0]);
     for index in 1..line.len() {
-        println!("{index}");
         if !is_valid_digits(line[index], line[index - 1], ordering)
             || (index == 1 && !handle_first_element(line))
         {
             if !is_first_iteration {
                 return false;
             }
-            println!("index {:?}", index);
             let mut first = line.clone();
             let mut second = line.clone();
             first.remove(index);
             second.remove(index - 1);
-            println!("first {:?}", first);
-            println!("second {:?}", second);
             return is_valid_line(&first, false) || is_valid_line(&second, false);
         }
     }
@@ -72,7 +60,6 @@ fn handle_first_element(line: &Vec<i32>) -> bool {
     let subtraction = first - second;
     let current_order = first.cmp(&second);
     let ordering = second.cmp(&third);
-    println!("line {:?}", line);
     if subtraction == 0 || subtraction.abs() > 3 || current_order != ordering {
         return false;
     }
