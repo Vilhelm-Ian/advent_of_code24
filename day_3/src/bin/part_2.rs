@@ -1,17 +1,19 @@
 use regex::Regex;
 
 fn main() {
-    let input = include_str!("./input.txt");
+    let input = include_str!();
     let result = solve(input);
     println!("{result}");
 }
 
 fn solve(input: &str) -> i32 {
-    let dont = Regex::new(r"don\'t\(\).*do\(\)").unwrap();
+    let input = format!("do(){input}don't()");
+    let dont = Regex::new(r"do\(\).*?don\'t\(\)").unwrap();
     let re = Regex::new(r"mul\(\d+\,\d+\)").unwrap();
     let numbers = Regex::new(r"\d+").unwrap();
-    let input = dont.replace_all(input, "");
-    re.find_iter(&input)
+    let input: String = dont.find_iter(input.as_str()).map(|ele| ele.as_str()).collect();
+    println!("{input}");
+    re.find_iter(input.as_str())
         .map(|matched| {
             numbers
                 .find_iter(matched.as_str())
