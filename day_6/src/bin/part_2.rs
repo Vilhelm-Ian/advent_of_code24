@@ -16,9 +16,11 @@ fn solve(input: &str) -> usize {
     let mut grid = parse(input);
     let mut guard_position = find_starting_positions(&grid);
     let mut result = HashSet::new();
+    let mut visited = HashSet::new();
     while let Some(new_position) = move_guard(&guard_position, &mut grid) {
         guard_position = new_position;
-        detect_loop(&guard_position, &grid, &mut result);
+        detect_loop(&guard_position, &grid, &mut result, &visited);
+        visited.insert(new_position);
     }
     result.len()
 }
@@ -88,15 +90,22 @@ fn update(guard_position: &mut Cordinate, grid: &mut Grid, y: i32, x: i32) -> Op
     Some(())
 }
 
-fn detect_loop(guard_position: &Cordinate, grid: &Grid, result: &mut HashSet<Cordinate>) -> bool {
+fn detect_loop(
+    guard_position: &Cordinate,
+    grid: &Grid,
+    result: &mut HashSet<Cordinate>,
+    visited: &HashSet<Cordinate>,
+) -> bool {
     let mut guard_position_1 = *guard_position;
     let mut guard_position_2 = *guard_position;
     if let Some(wall_cordinate) = add_wall(guard_position, grid) {
+        if visited.contains(&wall_cordinate) {
+            return false;
+        }
         let mut new_grid = grid.clone();
         new_grid[wall_cordinate[0]][wall_cordinate[1]] = '#';
         let mut new_grid_2 = new_grid.clone();
         let mut i = 0;
-        // harris and tortioise algorithm
         while let Some(new_position_1) = move_guard(&guard_position_1, &mut new_grid) {
             i += 1;
             guard_position_1 = new_position_1;
