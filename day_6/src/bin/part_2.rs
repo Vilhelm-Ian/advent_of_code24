@@ -20,8 +20,8 @@ fn solve(input: &str) -> usize {
     let mut visited = HashSet::new();
     while let Some(new_position) = move_guard(&guard_position, &mut grid) {
         guard_position = new_position;
-        detect_loop(&guard_position, &grid, &mut result, &visited);
         visited.insert(new_position);
+        detect_loop(&guard_position, &grid, &mut result, &visited);
     }
     result.remove(&og_guard_position);
     result.len()
@@ -100,11 +100,11 @@ fn detect_loop(
 ) -> bool {
     let mut guard_position_1 = *guard_position;
     let mut guard_position_2 = *guard_position;
+    let mut new_grid = grid.clone();
     if let Some(wall_cordinate) = add_wall(guard_position, grid) {
         if visited.contains(&wall_cordinate) {
             return false;
         }
-        let mut new_grid = grid.clone();
         new_grid[wall_cordinate[0]][wall_cordinate[1]] = '#';
         let mut new_grid_2 = new_grid.clone();
         let mut i = 0;
@@ -150,6 +150,9 @@ fn add_wall(guard_position: &Cordinate, grid: &Grid) -> Option<Cordinate> {
     }
     let new_y = (guard_position[0] as i32 + y) as usize;
     let new_x = (guard_position[1] as i32 + x) as usize;
+    if grid[new_y][new_x] == '#' {
+        return None;
+    }
     Some([new_y, new_x])
 }
 
