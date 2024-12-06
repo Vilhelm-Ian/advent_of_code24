@@ -14,7 +14,8 @@ fn parse(input: &str) -> Grid {
 
 fn solve(input: &str) -> usize {
     let mut grid = parse(input);
-    let mut guard_position = find_starting_positions(&grid);
+    let og_guard_position = find_starting_positions(&grid);
+    let mut guard_position = og_guard_position;
     let mut result = HashSet::new();
     let mut visited = HashSet::new();
     while let Some(new_position) = move_guard(&guard_position, &mut grid) {
@@ -22,6 +23,7 @@ fn solve(input: &str) -> usize {
         detect_loop(&guard_position, &grid, &mut result, &visited);
         visited.insert(new_position);
     }
+    result.remove(&og_guard_position);
     result.len()
 }
 
