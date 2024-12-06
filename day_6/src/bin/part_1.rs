@@ -23,7 +23,6 @@ fn solve(input: &str) -> usize {
         (*visited.entry(guard_position).or_default())
             .push(grid[guard_position[0]][guard_position[1]]);
     }
-
     visited.len()
 }
 
@@ -39,7 +38,7 @@ fn find_starting_positions(grid: &Grid) -> (Cordinate, HashSet<Cordinate>) {
                     crates_position.insert([y, x]);
                 }
                 'v' | '^' | '>' | '<' => {
-                    crates_position.insert([y, x]);
+                    guard_position = [y,x];
                 }
                 _ => (),
             };
@@ -82,25 +81,38 @@ fn update(guard_position: &mut Cordinate, grid: &mut Grid, y: i32, x: i32) -> Op
     if guard_position[1] == grid[0].len() - 1 && x == 1 {
         return None;
     }
+    let old_y = guard_position[0] as usize;
+    let old_x = guard_position[1] as usize;
     let new_y = (guard_position[0] as i32 + y) as usize;
     let new_x = (guard_position[1] as i32 + x) as usize;
-    if grid[new_y][new_x] != '.' {
+    if grid[new_y][new_x] == '#' {
         grid[guard_position[0]][guard_position[1]] =
             turn(grid[guard_position[0]][guard_position[1]]);
         return Some(());
     }
     guard_position[0] = new_y;
     guard_position[1] = new_x;
+    grid[new_y][new_x] = grid[old_y][old_x];
+    grid[old_y][old_x] = 'X';
     Some(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    pub const INPUT: &str = "";
+    pub const INPUT: &str = "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...";
     #[test]
     fn it_works() {
-        let result = INPUT;
-        assert_eq!(result, "hello");
+        let result = solve(INPUT);
+        assert_eq!(result, 41);
     }
 }
