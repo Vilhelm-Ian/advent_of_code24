@@ -96,6 +96,7 @@ fn detect_loop(guard_position: &Cordinate, grid: &Grid, result: &mut HashSet<Cor
         new_grid[wall_cordinate[0]][wall_cordinate[1]] = '#';
         let mut new_grid_2 = new_grid.clone();
         let mut i = 0;
+        // harris and tortioise algorithm
         while let Some(new_position_1) = move_guard(&guard_position_1, &mut new_grid) {
             i += 1;
             guard_position_1 = new_position_1;
