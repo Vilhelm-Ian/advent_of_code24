@@ -95,25 +95,6 @@ mod tests {
         let result = solve(INPUT);
         assert_eq!(result, 3749);
     }
-
-    #[test]
-    fn part_2_1() {
-        let result = is_valid(156, &vec![15, 6]);
-        assert!(result);
-    }
-
-    #[test]
-    fn part_2_2() {
-        let result = is_valid(79290, &vec![6, 8, 6, 15]);
-        assert!(result);
-    }
-
-    #[test]
-    fn part_2_3() {
-        let result = is_valid(192, &vec![17, 8, 14]);
-        assert!(result);
-    }
-
     #[test]
     fn part_1_2() {
         let result = is_valid(3267, &vec![81, 40, 27]);
