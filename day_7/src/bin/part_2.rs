@@ -38,9 +38,6 @@ fn solve(input: &str) -> i64 {
 }
 
 fn is_valid(target: i64, mut numbers: &Vec<i64>) -> bool {
-    // let mut numbers_clone = numbers.clone();
-    // println!("target {target}, numbers {:?}", numbers);
-    // for number in numbers.iter().rev() {
     if numbers.is_empty() {
         if target == 1 || target == 0 {
             return true;
