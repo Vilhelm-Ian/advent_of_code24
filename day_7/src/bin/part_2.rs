@@ -1,23 +1,6 @@
 use rayon::prelude::*;
 use std::collections::HashSet;
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-struct Perumtation {
-    value: i64,
-    seen: Vec<usize>,
-}
-
-impl Perumtation {
-    fn new(value: i64, seen: Vec<usize>) -> Self {
-        Perumtation { value, seen }
-    }
-    fn update(&mut self, value: i64, index: usize) {
-        self.value = value;
-        self.seen.push(index);
-        self.seen.sort();
-    }
-}
-
 fn main() {
     let input = include_str!("./input.txt");
     let result = solve(input);
