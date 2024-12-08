@@ -24,6 +24,11 @@ fn solve(input: &str) -> usize {
             add_index(y, x, &grid, &mut map);
         }
     }
+    for antenas in map.values() {
+        for antena in antenas {
+            result.insert(*antena);
+        }
+    }
     for (_, cordinates) in map {
         for i in 0..cordinates.len() {
             for z in 0..cordinates.len() {

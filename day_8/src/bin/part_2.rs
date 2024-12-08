@@ -30,11 +30,10 @@ fn solve(input: &str) -> usize {
                 if i == z {
                     continue;
                 }
-                if let Some((cordinate, difference)) =
-                    are_in_line(cordinates[i], cordinates[z], &grid)
-                {
-                    result.insert(cordinate);
-                    iterate_cordinates(cordinate, &grid, &mut result, difference);
+                result.insert(cordinates[i]);
+                result.insert(cordinates[z]);
+                if let Some(difference) = get_difference(cordinates[i], cordinates[z], &grid) {
+                    iterate_cordinates(cordinates[i], &grid, &mut result, difference);
                 }
             }
         }
@@ -67,17 +66,11 @@ fn add_index(y: usize, x: usize, grid: &Grid, map: &mut AntenaMap) {
     }
 }
 
-fn are_in_line(cor_1: Cordinate, cor_2: Cordinate, grid: &Grid) -> Option<(Cordinate, [i32; 2])> {
+fn get_difference(cor_1: Cordinate, cor_2: Cordinate, grid: &Grid) -> Option<([i32; 2])> {
     let new_y = cor_1[0] as i32 - cor_2[0] as i32;
     let new_x = cor_1[1] as i32 - cor_2[1] as i32;
     if is_valid_index([cor_1[0], cor_1[1]], grid, new_y, new_x) {
-        return Some((
-            [
-                (cor_1[0] as i32 + new_y) as usize,
-                (cor_1[1] as i32 + new_x) as usize,
-            ],
-            [new_y, new_x],
-        ));
+        return Some([new_y, new_x]);
     }
     None
 }
