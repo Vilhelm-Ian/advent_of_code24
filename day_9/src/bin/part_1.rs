@@ -4,43 +4,34 @@ fn main() {
     println!("{:?}", result);
 }
 
-struct File {
-    id: i64,
-    value: i64,
-}
-
-impl File {
-    fn new(value: i64, id: i64) -> Self {
-        Self { id, value }
-    }
-}
-
+#[derive(Clone)]
 enum Data {
-    FreeDisk(i64),
-    File(File),
+    FreeDisk,
+    File(i64),
 }
 
-fn solve(input: &str) -> i64 {
-    let disk = parse(input);
-    let mut disk: Vec<char> = disk_to_str(disk).chars().collect();
-    let mut i = 0;
+pub fn solve(input: &str) -> i64 {
     let mut result = 0;
+    let mut disk = parse(input);
+    let mut i = 0;
     loop {
         if i >= disk.len() {
             break;
         }
-        let mut current = i64::MAX;
-        if disk[i] == '.' {
-            while let Some(data) = disk.pop() {
-                if data != '.' {
-                    current = data.to_digit(10).unwrap() as i64;
-                    break;
+        let size = match disk[i] {
+            Data::File(size) => size,
+            Data::FreeDisk => {
+                let mut size = None;
+                while let Some(data) = disk.pop() {
+                    if let Data::File(s) = data {
+                        size = Some(s);
+                        break;
+                    };
                 }
+                size.unwrap()
             }
-        } else {
-            current = disk[i].to_digit(10).unwrap() as i64;
-        }
-        result += current * i as i64;
+        };
+        result += size * i as i64;
         i += 1;
     }
     result
@@ -51,22 +42,25 @@ fn parse(mut input: &str) -> Vec<Data> {
     let mut result = vec![];
     let mut id = 0;
     for (i, char) in input.chars().enumerate() {
+        let amount = char.to_digit(10).unwrap() as usize;
         if i % 2 == 0 {
-            result.push(Data::File(File::new(char.to_digit(10).unwrap() as i64, id)));
+            let files = vec![Data::File(id); amount];
+            result.extend_from_slice(&files);
             id += 1;
         } else {
-            result.push(Data::FreeDisk(char.to_digit(10).unwrap() as i64));
+            let free = vec![Data::FreeDisk; amount];
+            result.extend_from_slice(&free);
         }
     }
     result
 }
 
-fn disk_to_str(disk: Vec<Data>) -> String {
+fn disk_to_str(disk: &Vec<Data>) -> String {
     let mut result = String::from("");
     for data in disk {
         let postfix = match data {
-            Data::FreeDisk(amount) => ".".repeat(amount as usize),
-            Data::File(file) => (file.id.to_string()).repeat(file.value as usize),
+            Data::FreeDisk => ".".to_string(),
+            Data::File(file) => file.to_string(),
         };
         result += postfix.as_str();
     }
@@ -87,7 +81,15 @@ mod tests {
     fn print() {
         let input = "2333133121414131402";
         let input = parse(input);
-        let result = disk_to_str(input);
+        let result = disk_to_str(&input);
         assert_eq!(result, "00...111...2...333.44.5555.6666.777.888899");
+    }
+
+    #[test]
+    fn print_2() {
+        let input = "12345";
+        let input = parse(input);
+        let result = disk_to_str(&input);
+        assert_eq!(result, "0..111....22222");
     }
 }
