@@ -6,35 +6,43 @@ fn main() {
 
 #[derive(Clone)]
 enum Data {
-    FreeDisk,
+    FreeDisk(usize),
     File(i64),
 }
 
 pub fn solve(input: &str) -> i64 {
     let mut result = 0;
     let mut disk = parse(input);
+
     let mut i = 0;
+    let mut z = 0;
     loop {
         if i >= disk.len() {
             break;
         }
-        let size = match disk[i] {
-            Data::File(size) => size,
-            Data::FreeDisk => {
-                let mut size = None;
+        match disk[i] {
+            Data::File(size) => update_result(&size, &mut z, &mut result),
+            Data::FreeDisk(amount) => {
+                let mut m = 0;
                 while let Some(data) = disk.pop() {
                     if let Data::File(s) = data {
-                        size = Some(s);
-                        break;
+                        m += 1;
+                        update_result(&s, &mut z, &mut result)
                     };
+                    if m == amount {
+                        break;
+                    }
                 }
-                size.unwrap()
             }
         };
-        result += size * i as i64;
         i += 1;
     }
     result
+}
+
+fn update_result(size: &i64, z: &mut i64, result: &mut i64) {
+    *result += size * *z;
+    *z += 1;
 }
 
 fn parse(mut input: &str) -> Vec<Data> {
@@ -47,9 +55,8 @@ fn parse(mut input: &str) -> Vec<Data> {
             let files = vec![Data::File(id); amount];
             result.extend_from_slice(&files);
             id += 1;
-        } else {
-            let free = vec![Data::FreeDisk; amount];
-            result.extend_from_slice(&free);
+        } else if amount > 0 {
+            result.push(Data::FreeDisk(amount));
         }
     }
     result
@@ -59,7 +66,7 @@ fn disk_to_str(disk: &Vec<Data>) -> String {
     let mut result = String::from("");
     for data in disk {
         let postfix = match data {
-            Data::FreeDisk => ".".to_string(),
+            Data::FreeDisk(amount) => ".".repeat(*amount).to_string(),
             Data::File(file) => file.to_string(),
         };
         result += postfix.as_str();
