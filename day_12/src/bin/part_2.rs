@@ -84,13 +84,27 @@ fn handle_edges(grid: &Grid, edges: HashSet<Cordinate>, target: char) -> Vec<Cor
         if i >= list.len() - 1 {
             break;
         }
-        while i < list.len() - 1
-            && (list[i][0] as i32 - list[i + 1][0] as i32 == 0
-                || list[i][1] as i32 - list[i + 1][1] as i32 == 0)
-        {
-            list.remove(i);
+        while i < list.len() - 1 {
+            match (
+                list[i][0] as i32 - list[i + 1][0] as i32,
+                list[i][1] as i32 - list[i + 1][1] as i32,
+            ) {
+                (1, 0) => {
+                    list.remove(i);
+                }
+                (0, 1) => {
+                    list.remove(i);
+                }
+                (0, -1) => {
+                    list.remove(i);
+                }
+                (-1, 0) => {
+                    list.remove(i);
+                }
+                _ => (),
+            }
+            i += 1;
         }
-        i += 1;
     }
     // println!("list {:?}", list);
     list
