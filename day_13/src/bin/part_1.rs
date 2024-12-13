@@ -48,18 +48,30 @@ fn find_combination(x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32) -> (i3
     let difference_result_cordinates: i32 = x3 - y3;
     loop {
         n += 1;
-        if (difference_result_cordinates - n * difference_second_cordinates)
+        if n > 100 || m > 100 {
+            return (0, 0);
+        }
+        if difference_first_cordinates == 0
+            || difference_second_cordinates == 0
+            || difference_result_cordinates == 0
+        {
+            if (x3 - x2 * n) % x1 == 0 {
+                m = (x3 - x2 * n) / x1;
+            };
+        } else if (difference_result_cordinates - n * difference_second_cordinates)
             % difference_first_cordinates
             == 0
         {
             m = (difference_result_cordinates - n * difference_second_cordinates)
                 / difference_first_cordinates;
-            if m * x1 + n * x2 == x3 && m * y1 + n * y2 == y3 {
-                break;
-            }
-            if m * x1 + n * x2 > x3 && m * y1 + n * y2 > y3 {
-                return (0, 0);
-            }
+        } else {
+            continue;
+        }
+        if m * x1 + n * x2 == x3 && m * y1 + n * y2 == y3 {
+            break;
+        }
+        if m * x1 + n * x2 > x3 && m * y1 + n * y2 > y3 {
+            return (0, 0);
         }
     }
     (m, n)
@@ -87,5 +99,10 @@ Prize: X=18641, Y=10279";
     fn test_2() {
         let result = solve(TEST);
         assert_eq!(result, 480);
+    }
+    #[test]
+    fn test_3() {
+        let result = find_combination(74, 74, 25, 97, 6236, 10556);
+        assert_eq!(result, (64, 60));
     }
 }
