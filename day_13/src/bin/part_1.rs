@@ -10,15 +10,17 @@ fn solve(input: &str) -> i32 {
     let games = parse(input);
     let mut result = 0;
     for game in games {
-        println!("{:?}", game[0]);
-        println!("{:?}", game[1]);
-        println!("{:?}", game[2]);
         let [x1, y1] = [game[0][0], game[0][1]];
         let [x2, y2] = [game[1][0], game[1][1]];
         let [x3, y3] = [game[2][0], game[2][1]];
-        let (a, b) = find_combination(x1, y1, x2, y2, x3, y3);
-        println!("a {a} b {b}");
-        result += a * 3 + b;
+        let combinations = find_combination(x1, y1, x2, y2, x3, y3);
+        println!("{:?}", combinations);
+        if let Some((a, b)) = combinations
+            .iter()
+            .min_by(|(a1, b1), (a2, b2)| (a1 * 3 + b1).cmp(&(a2 * 3 + b2)))
+        {
+            result += a * 3 + b;
+        }
     }
     result
 }
@@ -40,41 +42,36 @@ fn parse(input: &str) -> Vec<Vec<Vec<i32>>> {
     games
 }
 
-fn find_combination(x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32) -> (i32, i32) {
-    let mut m: i32 = 0;
-    let mut n: i32 = 0;
+fn find_combination(x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32) -> Vec<(i32, i32)> {
     let difference_first_cordinates: i32 = x1 - y1;
     let difference_second_cordinates: i32 = x2 - y2;
     let difference_result_cordinates: i32 = x3 - y3;
-    loop {
-        n += 1;
-        if n > 100 || m > 100 {
-            return (0, 0);
-        }
+    let mut results = vec![];
+    for m in 0..=100 {
+        let mut n: i32 = 0;
         if difference_first_cordinates == 0
             || difference_second_cordinates == 0
             || difference_result_cordinates == 0
         {
-            if (x3 - x2 * n) % x1 == 0 {
-                m = (x3 - x2 * n) / x1;
-            };
-        } else if (difference_result_cordinates - n * difference_second_cordinates)
-            % difference_first_cordinates
-            == 0
-        {
-            m = (difference_result_cordinates - n * difference_second_cordinates)
-                / difference_first_cordinates;
-        } else {
+            n = (x3 - x1 * m) / x2;
+            if n <= 100 && m * x1 + n * x2 == x3 && m * y1 + n * y2 == y3 {
+                results.push((m, n));
+            }
             continue;
         }
-        if m * x1 + n * x2 == x3 && m * y1 + n * y2 == y3 {
-            break;
-        }
-        if m * x1 + n * x2 > x3 && m * y1 + n * y2 > y3 {
-            return (0, 0);
+        if (difference_result_cordinates - m * difference_first_cordinates)
+            % difference_second_cordinates
+            == 0
+        {
+            n = (difference_result_cordinates - m * difference_first_cordinates)
+                / difference_second_cordinates;
+            if n <= 100 && m * x1 + n * x2 == x3 && m * y1 + n * y2 == y3 {
+                results.push((m, n));
+                break;
+            }
         }
     }
-    (m, n)
+    results
 }
 
 #[cfg(test)]
@@ -103,6 +100,6 @@ Prize: X=18641, Y=10279";
     #[test]
     fn test_3() {
         let result = find_combination(74, 74, 25, 97, 6236, 10556);
-        assert_eq!(result, (64, 60));
+        assert_eq!(result[0], (64, 60));
     }
 }
