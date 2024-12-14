@@ -15,7 +15,7 @@ fn parse(input: &str) -> Grid {
 type Cordinate = [usize; 2];
 type AntenaMap = HashMap<char, Vec<Cordinate>>;
 
-fn solve(input: &str) -> usize {
+pub fn solve(input: &str) -> usize {
     let grid = parse(input);
     let mut result = HashSet::new();
     let mut map: AntenaMap = HashMap::new();

@@ -12,24 +12,30 @@ fn main() {
 
 fn solve(input: &str) -> usize {
     let grid = parse(input);
-    let mut seen = HashMap::new();
     let mut result = 0;
+    let target = 'A';
+    let mut result = 0;
+    println!("{:?}", grid);
     for y in 0..grid.len() {
         for x in 0..grid[0].len() {
-            let mut edges = HashSet::new();
-            let mut current_area = HashMap::new();
-            if seen.contains_key(&[y, x]) {
+            if grid[y][x] == target {
                 continue;
             }
-            traverse([y, x], &grid, &mut seen, &mut current_area, &mut edges);
-            let ed = handle_edges(&grid, edges, grid[y][x]);
-            let ed = how_many_a(&ed, &grid, grid[y][x]);
-            result += current_area.len() * ed;
-            // println!("{:?}", result);
-            // println!("{:?} len{:?}", ed, current_area.len());
-            // println!("{ed} {}", grid[y][x]);
+            if (y < grid.len() - 1 && grid[y + 1][x] == target)
+                && ((x > 0 && grid[y][x - 1] == target)
+                    || (x < grid.len() - 1 && grid[y][x + 1] == target))
+            {
+                result += 1;
+            }
+            if (y > 0 && grid[y - 1][x] == target)
+                && ((x > 0 && grid[y][x - 1] == target)
+                    || (x < grid.len() - 1 && grid[y][x + 1] == target))
+            {
+                result += 1;
+            }
         }
     }
+    println!("{:?}", result);
     result
 }
 
@@ -59,115 +65,6 @@ fn is_valid_index(index: Cordinate, grid: &Grid, y: i32, x: i32) -> bool {
         return false;
     };
     true
-}
-
-fn handle_edges(grid: &Grid, edges: HashSet<Cordinate>, target: char) -> Vec<Cordinate> {
-    if edges.is_empty() {
-        return vec![];
-    }
-    let first = edges.iter().min_by_key(|[a, b]| a + b).unwrap();
-    let mut current = *first;
-    let mut seen = HashSet::new();
-    let mut list = vec![];
-    loop {
-        seen.insert(current);
-        list.push(current);
-        if let Some(next_cordinate) = next(&current, grid, &edges, &seen) {
-            current = next_cordinate;
-        } else {
-            break;
-        };
-    }
-    let mut i = 0;
-    // println!("list {:?}", list);
-    loop {
-        if i >= list.len() - 1 {
-            break;
-        }
-        while i < list.len() - 1 {
-            match (
-                list[i][0] as i32 - list[i + 1][0] as i32,
-                list[i][1] as i32 - list[i + 1][1] as i32,
-            ) {
-                (1, 0) => {
-                    list.remove(i);
-                }
-                (0, 1) => {
-                    list.remove(i);
-                }
-                (0, -1) => {
-                    list.remove(i);
-                }
-                (-1, 0) => {
-                    list.remove(i);
-                }
-                _ => (),
-            }
-            i += 1;
-        }
-    }
-    // println!("list {:?}", list);
-    list
-}
-
-fn how_many_a(edges: &Vec<Cordinate>, grid: &Grid, target: char) -> usize {
-    let mut result = 0;
-    let directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-    for edge in edges {
-        for direction in directions.iter() {
-            if is_valid_index(*edge, grid, direction[0], direction[1])
-                && grid[(edge[0] as i32 + direction[0]) as usize]
-                    [(edge[1] as i32 + direction[1]) as usize]
-                    == target
-            {
-                // println!(
-                //     "{:?}",
-                //     [
-                //         (edge[0] as i32 + direction[0]),
-                //         (edge[1] as i32 + direction[1])
-                //     ]
-                // );
-                result += 1;
-            }
-        }
-    }
-    result
-}
-
-fn next(
-    cordinate: &Cordinate,
-    grid: &Grid,
-    edges: &HashSet<Cordinate>,
-    seen: &HashSet<Cordinate>,
-) -> Option<Cordinate> {
-    let directions = vec![
-        [1, 0],
-        [-1, 0],
-        [0, 1],
-        [0, -1],
-        [1, 1],
-        [-1, 1],
-        [1, -1],
-        [-1, -1],
-    ];
-    for direction in directions {
-        if is_valid_index(*cordinate, grid, direction[0], direction[1])
-            && edges.contains(&[
-                (cordinate[0] as i32 + direction[0]) as usize,
-                (cordinate[1] as i32 + direction[1]) as usize,
-            ])
-            && !seen.contains(&[
-                (cordinate[0] as i32 + direction[0]) as usize,
-                (cordinate[1] as i32 + direction[1]) as usize,
-            ])
-        {
-            return Some([
-                (cordinate[0] as i32 + direction[0]) as usize,
-                (cordinate[1] as i32 + direction[1]) as usize,
-            ]);
-        }
-    }
-    None
 }
 
 fn traverse(
@@ -215,6 +112,28 @@ mod tests {
 BBCD
 BBCC
 EEEC";
+        let result = solve(input);
+        assert_eq!(result, 80);
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE";
+        let result = solve(input);
+        assert_eq!(result, 80);
+    }
+    #[test]
+    fn test_3() {
+        let input = "AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA";
         let result = solve(input);
         assert_eq!(result, 80);
     }

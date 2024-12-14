@@ -15,7 +15,7 @@ fn parse(input: &str) -> Grid {
 type Cordinate = [usize; 2];
 type AntenaMap = HashMap<char, Vec<Cordinate>>;
 
-fn solve(input: &str) -> usize {
+pub fn solve(input: &str) -> usize {
     let mut grid = parse(input);
     let mut result = HashSet::new();
     let mut map: AntenaMap = HashMap::new();
@@ -42,9 +42,6 @@ fn solve(input: &str) -> usize {
         if grid[cordinate[0]][cordinate[1]] == '.' {
             grid[cordinate[0]][cordinate[1]] = '#';
         }
-    }
-    for line in grid {
-        println!("{:?}", line);
     }
 
     result.len()

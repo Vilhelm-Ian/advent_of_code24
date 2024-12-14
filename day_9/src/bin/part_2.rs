@@ -39,6 +39,10 @@ pub fn solve(input: &str) -> i64 {
                 for m in (0..files.len()).rev() {
                     let [key, value] = files[m];
                     let value = value as usize;
+                    if seen.contains(&key) {
+                        files.remove(m);
+                        continue;
+                    }
                     if value <= new_free_space {
                         new_free_space -= value;
                         update_result(&key, value, &mut z, &mut result);

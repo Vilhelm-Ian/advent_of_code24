@@ -59,8 +59,6 @@ fn is_valid(target: i64, mut numbers: &Vec<i64>) -> bool {
             return true;
         }
     }
-
-    // }
     false
 }
 
