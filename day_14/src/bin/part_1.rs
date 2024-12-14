@@ -29,10 +29,22 @@ impl Robot {
     }
 
     fn move_times(&mut self, n: i32, grid_height: usize, grid_width: usize) {
-        self.position[0] =
-            ((self.position[0] as i32 + self.velocity[0] * n) % grid_height as i32) as usize;
-        self.position[1] =
-            ((self.position[1] as i32 + self.velocity[1] * n) % grid_width as i32) as usize;
+        if self.velocity[0] >= 0 {
+            self.position[0] =
+                ((self.position[0] as i32 + self.velocity[0] * n) % grid_height as i32) as usize;
+        } else {
+            self.position[0] = (grid_height as i32
+                + ((self.position[0] as i32 + self.velocity[0] * n) % grid_height as i32))
+                as usize;
+        }
+        if self.velocity[1] >= 0 {
+            self.position[1] =
+                ((self.position[1] as i32 + self.velocity[1] * n) % grid_width as i32) as usize;
+        } else {
+            self.position[1] = (grid_width as i32
+                + ((self.position[1] as i32 + self.velocity[1] * n) % grid_width as i32))
+                as usize;
+        }
     }
 
     fn new(position: Cordinate, velocity: Velocity) -> Self {
@@ -103,8 +115,8 @@ mod tests {
     // }
     #[test]
     fn move_n_times() {
-        let mut robot1 = Robot::new([3, 1], [1, -1]);
-        let mut robot2 = Robot::new([3, 1], [1, -1]);
+        let mut robot1 = Robot::new([3, 1], [-1, -4]);
+        let mut robot2 = Robot::new([3, 1], [-1, -4]);
         for _ in 0..11 {
             robot1.move_robot(10, 10);
         }
