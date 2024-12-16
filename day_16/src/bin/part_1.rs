@@ -1,4 +1,5 @@
-use std::collections::{HashMap, HashSet};
+use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 fn main() {
     let input = include_str!("./input.txt");
@@ -96,36 +97,37 @@ fn djikstra(
     grid: &Grid,
 ) -> i32 {
     let mut current = starting_cordinate;
-    let mut not_visited: HashSet<Cordinate> = tiles.clone().into_keys().collect();
+    let mut heap = BinaryHeap::new();
+    let mut visited = HashSet::new();
     let mut cordinate_direction: HashMap<[usize; 2], [i32; 2]> = HashMap::new();
     cordinate_direction.insert(current, [0, 1]);
-    loop {
+    heap.push(Reverse((0, starting_cordinate)));
+    while let Some(Reverse((distance, current))) = heap.pop() {
         if index_grid(&current, grid) == 'E' {
-            return *tiles.get(&current).unwrap();
+            return distance;
         }
-        let current_direction = cordinate_direction.get(&current).copied().unwrap();
-        let current_value = tiles.get(&current).copied().unwrap();
-        not_visited.remove(&current);
+        if visited.contains(&current) {
+            continue;
+        }
+        visited.insert(current);
+        let current_direction = cordinate_direction.get(&current.clone()).copied().unwrap();
+        let current_value = tiles.get(&current.clone()).copied().unwrap();
         let directions: Vec<[i32; 2]> = vec![[1, 0], [0, 1], [-1, 0], [0, -1]];
         for direction in directions {
             let new_cordinate = update_cordinate(&current, &direction);
-            if not_visited.contains(&new_cordinate) {
+            if !visited.contains(&new_cordinate) && tiles.contains_key(&new_cordinate) {
                 if direction[0].abs() != current_direction[0].abs() {
                     *tiles.get_mut(&new_cordinate).unwrap() = current_value + 1001;
+                    heap.push(Reverse((current_value + 1001, new_cordinate)));
                 } else {
                     *tiles.get_mut(&new_cordinate).unwrap() = current_value + 1;
+                    heap.push(Reverse((current_value + 1, new_cordinate)));
                 }
                 cordinate_direction.insert(new_cordinate, direction);
             }
         }
-        let (new_cordinate, _) = not_visited
-            .iter()
-            .filter(|key| tiles.contains_key(*key))
-            .map(|key| (key, tiles.get(key).unwrap()))
-            .min_by_key(|(_, value)| *value)
-            .unwrap();
-        current = *new_cordinate;
     }
+    panic!("didn't find e")
 }
 
 fn solve(input: &str) -> i32 {
