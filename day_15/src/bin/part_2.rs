@@ -160,7 +160,7 @@ fn calculate_score(grid: &Grid) -> i32 {
     result as i32
 }
 
-fn solve(input: &str) -> i32 {
+pub fn solve(input: &str) -> i32 {
     let (mut grid, instructions) = parse(input);
     let mut grid = duplicate_map(&grid);
     let mut current_cordinate = find_robot(&grid);

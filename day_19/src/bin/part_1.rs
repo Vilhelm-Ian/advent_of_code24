@@ -26,7 +26,7 @@ fn parse(input: &str) -> (Vec<&str>, Vec<&str>, usize) {
 // double letter bb, bw, bu, bg, missing br
 // triple letter brb, brg, brr, brw, bru,
 
-fn solve(input: &str) -> i32 {
+pub fn solve(input: &str) -> i32 {
     let (towels, mut designs, max) = parse(input);
     let mut designs_sets = HashSet::new();
     for design in designs {

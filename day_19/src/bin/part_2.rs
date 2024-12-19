@@ -6,7 +6,7 @@ fn main() {
     println!("{:?}", result);
 }
 
-fn parse(input: &str) -> (Vec<&str>, Vec<&str>, usize) {
+pub fn parse(input: &str) -> (Vec<&str>, Vec<&str>, usize) {
     input.lines().fold(
         (vec![], Vec::new(), 0),
         |(mut towels, mut designs, mut max), line| {
@@ -26,7 +26,7 @@ fn parse(input: &str) -> (Vec<&str>, Vec<&str>, usize) {
 // double letter bb, bw, bu, bg, missing br
 // triple letter brb, brg, brr, brw, bru,
 
-fn solve(input: &str) -> i64 {
+pub fn solve(input: &str) -> i64 {
     let (towels, mut designs, max) = parse(input);
     let mut designs_sets = HashSet::new();
     for design in designs {
@@ -37,7 +37,6 @@ fn solve(input: &str) -> i64 {
     for towel in towels.iter().skip(1) {
         let mut seen = HashMap::new();
         result += find_combinations(towel, &designs_sets, &mut seen);
-        println!("{:?}", seen);
     }
     result
 }
