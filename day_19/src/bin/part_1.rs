@@ -28,17 +28,32 @@ fn parse(input: &str) -> (Vec<&str>, Vec<&str>, usize) {
 
 fn solve(input: &str) -> i32 {
     let (towels, mut designs, max) = parse(input);
-    let mut result = 0;
-    let mut z = 0;
     let mut designs_sets = HashSet::new();
     for design in designs {
         designs_sets.insert(design);
     }
-    let designs_sets = remove_redundant_designs(designs_sets);
+    let redundant_designs_sets = remove_redundant_designs(designs_sets.clone());
+    let mut result = 0;
     for towel in towels.iter().skip(1) {
-        let combinations = get_combinations_2(towel, &designs_sets, true);
-        if !combinations.is_empty() {
+        if find_combinations(towel, &redundant_designs_sets) > 0 {
             result += 1;
+        }
+    }
+
+    result
+}
+
+fn find_combinations(towel: &str, designs: &HashSet<&str>) -> i32 {
+    if towel.is_empty() {
+        return 1;
+    }
+    let mut result = 0;
+    for i in 1..=8 {
+        if i <= towel.len() && designs.contains(&towel[..i]) {
+            result += find_combinations(&towel[i..], designs);
+        }
+        if result > 0 {
+            break;
         }
     }
 
@@ -53,31 +68,6 @@ fn get_combinations(target: i32, elements: &Vec<i32>) -> Vec<Vec<i32>> {
     for element in elements {
         if *element <= target {
             let combinations = get_combinations(target - element, elements);
-            for combination in combinations {
-                let mut n = vec![*element];
-                n.extend_from_slice(&combination);
-                result.push(n);
-            }
-        }
-    }
-    result
-}
-
-fn get_combinations_2<'a>(
-    target: &str,
-    elements: &HashSet<&'a str>,
-    is_main: bool,
-) -> Vec<Vec<&'a str>> {
-    if target == "" {
-        return vec![vec![]];
-    }
-    let mut result = vec![];
-    for element in elements {
-        if is_main && !result.is_empty() {
-            break;
-        }
-        if target.starts_with(element) {
-            let combinations = get_combinations_2(&target[element.len()..], elements, false);
             for combination in combinations {
                 let mut n = vec![*element];
                 n.extend_from_slice(&combination);
@@ -115,10 +105,35 @@ fn remove_redundant_designs(mut designs: HashSet<&str>) -> HashSet<&str> {
     designs
 }
 
+fn get_combinations_2<'a>(
+    target: &str,
+    elements: &HashSet<&'a str>,
+    is_main: bool,
+) -> Vec<Vec<&'a str>> {
+    if target == "" {
+        return vec![vec![]];
+    }
+    let mut result = vec![];
+    for element in elements {
+        if is_main && !result.is_empty() {
+            break;
+        }
+        if target.starts_with(element) {
+            let combinations = get_combinations_2(&target[element.len()..], elements, false);
+            for combination in combinations {
+                let mut n = vec![*element];
+                n.extend_from_slice(&combination);
+                result.push(n);
+            }
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = "r, wr, b, g, bwu, rb, gb, br
+    pub const INPUT: &str = "r, wr, b, g, bwu, rb, gb, br
 
 brwrr
 bggr
