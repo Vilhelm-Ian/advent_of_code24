@@ -13,7 +13,7 @@ type Grid = Vec<Vec<char>>;
 type Cordinate = [usize; 2];
 type Direction = [i32; 2];
 
-fn solve(input: &str) -> i32 {
+pub fn solve(input: &str) -> i32 {
     let grid = parse(input);
     let starting_cordinate = find_element(&grid, 'S');
     breath_first_search(&grid, &starting_cordinate, [0, 0])
