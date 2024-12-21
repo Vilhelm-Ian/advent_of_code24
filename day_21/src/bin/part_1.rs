@@ -19,13 +19,31 @@ const NUMERIC_PAD: [[char; 3]; 4] = [
     [' ', '0', 'A'],
 ];
 
+const ARROW_PAD: [[char; 3]; 2] = [[' ', '^', 'A'], ['<', 'V', '>']];
+
 fn parse(input: &str) -> Vec<Vec<char>> {
     input.lines().map(|line| line.chars().collect()).collect()
 }
 
 fn solve(input: &str) -> i32 {
     let codes = parse(input);
-    find_shortest_numeric_pad(&codes[0]);
+    let temp = find_shortest_numeric_pad(&codes[0]);
+    let mut temp_2 = vec![];
+    let mut temp_3 = vec![];
+    for m in temp {
+        temp_2.push(find_shortest_arrow_pad(&m.into_iter().flatten().collect()));
+    }
+    // find_shortest_arrow_pad(&"v<<a>>^a<a>ava<^aa>a<vaaa>^a".chars().collect());
+    for t in temp_2 {
+        for z in t {
+            temp_3.push(find_shortest_arrow_pad(&z.into_iter().flatten().collect()));
+        }
+    }
+    for b in temp_3 {
+        for k in b {
+            println!("{:?}", k.iter().flatten().collect::<String>());
+        }
+    }
     0
 }
 
@@ -49,10 +67,13 @@ fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<Vec<Vec<char>>> {
         let a = rez
             .into_iter()
             .map(|h| {
-                h.windows(2)
+                let mut res = h
+                    .windows(2)
                     .map(|w| direction_from_distances(w[1], w[0]))
                     .map(|dir| direction_to_arrow(&dir))
-                    .collect::<Vec<char>>()
+                    .collect::<Vec<char>>();
+                res.push('A');
+                res
             })
             .collect::<Vec<Vec<char>>>();
         name_later.push(a);
@@ -62,7 +83,97 @@ fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<Vec<Vec<char>>> {
     for b in name_later[0].clone() {
         h.push(generate_combinations(&b, &name_later[1..], vec![]));
     }
+    for z in h[0].clone() {
+        println!("{:?}", z.iter().flatten().collect::<String>());
+    }
     h[0].clone()
+}
+
+fn find_shortest_arrow_pad(arrows: &Vec<char>) -> Vec<Vec<Vec<char>>> {
+    let mut start = [0, 2];
+    let directions: Vec<[i32; 2]> = vec![[1, 0], [0, 1], [-1, 0], [0, -1]];
+    // let mut code = code.iter();
+    let mut name_later = vec![];
+    for arrow in arrows {
+        let target = arrow_to_cordinate(arrow);
+        // println!("{:?} {:?}", target, start);
+        let rez = depth_first_search_arrow(
+            target,
+            vec![],
+            start,
+            HashSet::new(),
+            manhatan_distance(target, start) + 1,
+            0,
+        );
+        let a = rez
+            .into_iter()
+            .map(|h| {
+                let mut res = h
+                    .windows(2)
+                    .map(|w| direction_from_distances(w[1], w[0]))
+                    .map(|dir| direction_to_arrow(&dir))
+                    .collect::<Vec<char>>();
+                res.push('A');
+                res
+            })
+            .collect::<Vec<Vec<char>>>();
+        name_later.push(a);
+        start = target;
+    }
+    // println!("hello");
+    // println!("{:?}", name_later);
+    let mut h = vec![];
+    for b in name_later[0].clone() {
+        println!("b: {:?}", b);
+        h.push(generate_combinations(&b, &name_later[1..], vec![]));
+    }
+    // for z in h.clone() {
+    //     for m in z {
+    //         println!("{:?}", m.iter().flatten().collect::<String>());
+    //     }
+    // }
+    h[0].clone()
+}
+
+fn depth_first_search_arrow(
+    target: Cordinate,
+    mut path: Vec<Cordinate>,
+    current_cordinate: Cordinate,
+    mut seen: HashSet<Cordinate>,
+    distance: usize,
+    steps: usize,
+) -> Vec<Vec<Cordinate>> {
+    path.push(current_cordinate);
+    if current_cordinate[0] > 1 || current_cordinate[1] > 2 {
+        return vec![];
+    }
+    if seen.contains(&current_cordinate) {
+        return vec![];
+    }
+    if path.len() > distance || current_cordinate == [0, 0] {
+        return vec![];
+    }
+    if path.len() == distance && target == current_cordinate {
+        return vec![path];
+    }
+    seen.insert(current_cordinate);
+    let mut result = vec![];
+    let directions: Vec<[i32; 2]> = vec![[1, 0], [0, 1], [-1, 0], [0, -1]];
+    for directiton in directions {
+        let new_cordinate = update_cordinate(current_cordinate, directiton);
+        for name_later in depth_first_search_arrow(
+            target,
+            path.clone(),
+            new_cordinate,
+            seen.clone(),
+            distance,
+            steps + 1,
+        ) {
+            result.push(name_later);
+        }
+    }
+
+    result
 }
 
 fn depth_first_search(
@@ -126,8 +237,20 @@ fn direction_to_arrow(direction: &Direction) -> char {
     }
 }
 
+fn arrow_to_cordinate(direction: &char) -> Cordinate {
+    match direction {
+        '>' => [1, 2],
+        '<' => [1, 0],
+        '^' => [0, 1],
+        'v' => [1, 1],
+        'A' => [0, 2],
+        _ => panic!("not vaalid arrow"),
+    }
+}
+
 fn manhatan_distance(a: Cordinate, b: Cordinate) -> usize {
-    (a[0] as i32 - b[0] as i32).abs() as usize + (a[1] as i32 - b[1] as i32).abs() as usize
+    ((a[0] as i32 - b[0] as i32).unsigned_abs() + (a[1] as i32 - b[1] as i32).unsigned_abs())
+        as usize
 }
 
 fn code_to_index(code: char) -> Cordinate {
