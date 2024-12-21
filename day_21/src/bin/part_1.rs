@@ -31,12 +31,10 @@ fn solve(input: &str) -> i32 {
 
 //029A
 
-fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<char> {
+fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<Vec<Vec<char>>> {
     let mut start = [3, 2];
     let directions: Vec<[i32; 2]> = vec![[1, 0], [0, 1], [-1, 0], [0, -1]];
-    // let mut visited = HashMap::new();
     let mut code = code.iter();
-    // let mut result = vec![];
     let mut name_later = vec![];
     for code in code {
         let target = code_to_index(*code);
@@ -48,13 +46,6 @@ fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<char> {
             manhatan_distance(target, start) + 1,
             0,
         );
-        // println!("{:?}", rez.flatten());
-        // println!(
-        //     "{:?}",
-        //     rez.iter()
-        //         .map(|name| name.chunks(2).collect::<Vec<&[Cordinate]>>())
-        //         .collect::<Vec<Vec<&[Cordinate]>>>()
-        // );
         let a = rez
             .into_iter()
             .map(|h| {
@@ -65,16 +56,13 @@ fn find_shortest_numeric_pad(code: &Vec<char>) -> Vec<char> {
             })
             .collect::<Vec<Vec<char>>>();
         name_later.push(a);
-        // rez.iter().map(||)
         start = target;
-        // generate_combinations(, r, , )
     }
-    // println!("{:?}", name_later);
-    let h = generate_combinations(&name_later[0][0], &name_later[1..], vec![]);
-    for z in h {
-        println!("{:?}", z);
+    let mut h = vec![];
+    for b in name_later[0].clone() {
+        h.push(generate_combinations(&b, &name_later[1..], vec![]));
     }
-    vec![]
+    h[0].clone()
 }
 
 fn depth_first_search(
@@ -113,9 +101,7 @@ fn depth_first_search(
             distance,
             steps + 1,
         ) {
-            // if !result.contains(&name_later) {
             result.push(name_later);
-            // }
         }
     }
 
