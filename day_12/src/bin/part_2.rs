@@ -1,6 +1,8 @@
 use std::{
     any::Any,
-    collections::{HashMap, HashSet},
+    arch::x86_64::_CMP_TRUE_UQ,
+    char,
+    collections::{HashMap, HashSet, VecDeque},
     env::current_dir,
 };
 
@@ -10,26 +12,29 @@ fn main() {
     println!("{:?}", result);
 }
 
-fn solve(input: &str) -> usize {
-    let grid = parse(input);
+fn solve(input: &str) -> u32 {
+    let mut grid = parse(input);
     let mut result = 0;
     let mut seen = HashMap::new();
     for y in 0..grid.len() {
         for x in 0..grid[0].len() {
-            if grid[y][x] == '.' {
+            if seen.contains_key(&[y, x]) {
                 continue;
             }
             let mut current_area = HashMap::new();
-            let mut edges = HashSet::new();
-            let mut corners = HashSet::new();
-            traverse([y, x], &grid, &mut seen, &mut current_area, &mut edges);
-            find_corners(&edges, &grid, grid[y][x], &mut corners);
-            result += corners.len() * current_area.len();
-            if !current_area.is_empty() {
-                println!("{} {}", corners.len(), current_area.len())
-            }
+            traverse([y, x], &grid, &mut seen, &mut current_area);
+            let mut edges: HashMap<[usize; 2], usize> = current_area.clone();
+            edges.retain(|_, value| *value > 0);
+            let perimeter = find_corners([y, x], edges, &grid, current_area.clone());
+            let price = perimeter * current_area.len() as u32;
+            println!("{:?}", perimeter);
+            println!("{:?}", current_area);
+            result += price;
         }
     }
+    // for line in grid {
+    //     println! {"g{:?}",line};
+    // }
     result
 }
 
@@ -66,18 +71,14 @@ fn traverse(
     grid: &Grid,
     seen: &mut HashMap<Cordinate, usize>,
     current_area: &mut HashMap<Cordinate, usize>,
-    edges: &mut HashSet<Cordinate>,
 ) {
-    if seen.contains_key(&current_cordinate)
-        || grid[current_cordinate[0]][current_cordinate[1]] == '.'
-    {
-        return;
+    if seen.contains_key(&current_cordinate) {
+        return ();
     }
     let mut sides = 4;
     let current_value = grid[current_cordinate[0]][current_cordinate[1]];
     let directions = vec![[1, 0], [-1, 0], [0, 1], [0, -1]];
     seen.insert(current_cordinate, sides);
-    current_area.insert(current_cordinate, sides);
     for direction in directions {
         let y = direction[0];
         let x = direction[1];
@@ -86,10 +87,8 @@ fn traverse(
             let new_x = (current_cordinate[1] as i32 + x) as usize;
             let next = grid[new_y][new_x];
             if next == current_value {
-                traverse([new_y, new_x], grid, seen, current_area, edges);
+                traverse([new_y, new_x], grid, seen, current_area);
                 sides -= 1
-            } else {
-                edges.insert([new_y, new_x]);
             }
         }
     }
@@ -98,39 +97,77 @@ fn traverse(
 }
 
 fn find_corners(
-    edges: &HashSet<Cordinate>,
+    start: Cordinate,
+    retained: HashMap<Cordinate, usize>,
     grid: &Grid,
-    target: char,
-    corners: &mut HashSet<Cordinate>,
-) {
-    for edge in edges {
-        if (edge[0] != 0 && !edges.contains(&[edge[0] - 1, edge[1]]))
-            && grid[edge[0] - 1][edge[1]] != target
-            && (edges.contains(&[edge[0] - 1, edge[1] + 1])
-                || (edges.contains(&[edge[0] - 1, edge[1] - 1])))
-        {
-            corners.insert([edge[0] - 1, edge[1]]);
+    current_area: HashMap<Cordinate, usize>,
+) -> u32 {
+    let mut result = HashMap::new();
+    let current = grid[start[0]][start[1]];
+    let mut grid_clone = grid.clone();
+    if current == '.' {
+        return 0;
+    }
+    for (edge, _) in retained {
+        let mut sum = 0;
+        if grid[edge[0] + 1][edge[1]] != current {
+            if grid[edge[0]][edge[1] + 1] != current {
+                *result.entry([edge[0], edge[1] + 1]).or_insert(0) += 1;
+            }
+            if grid[edge[0]][edge[1] - 1] != current {
+                *result.entry([edge[0] + 1, edge[1]]).or_insert(0) += 1;
+            }
         }
-        if (edge[0] != grid.len() - 1 && !edges.contains(&[edge[0] + 1, edge[1]]))
-            && grid[edge[0] + 1][edge[1]] != target
-            && (edges.contains(&[edge[0] + 1, edge[1] + 1])
-                || (edges.contains(&[edge[0] + 1, edge[1] - 1])))
-        {
-            corners.insert([edge[0] + 1, edge[1]]);
+        if grid[edge[0] - 1][edge[1]] != current {
+            if grid[edge[0]][edge[1] + 1] != current {
+                *result.entry([edge[0] - 1, edge[1]]).or_insert(0) += 1;
+            }
+            if grid[edge[0]][edge[1] - 1] != current {
+                *result.entry([edge[0], edge[1] - 1]).or_insert(0) += 1;
+            }
         }
-        if (edge[0] < grid.len() - 1 && grid[edge[0] + 1][edge[1]] == target)
-            && ((edge[1] < grid[0].len() - 1 && grid[edge[0]][edge[1] + 1] == target)
-                || (edge[0] > 0 && grid[edge[0]][edge[1] - 1] == target))
-        {
-            corners.insert([edge[0] + 1, edge[1]]);
-        }
-        if (edge[0] > 0 && grid[edge[0] - 1][edge[1]] == target)
-            && ((edge[1] < grid[0].len() - 1 && grid[edge[0]][edge[1] + 1] == target)
-                || (edge[0] > 0 && grid[edge[0]][edge[1] - 1] == target))
-        {
-            corners.insert([edge[0] - 1, edge[1]]);
+        if grid[edge[0] - 1][edge[1]] == current || grid[edge[0] + 1][edge[1]] == current {
+            let r_d = current_area.contains_key(&[edge[0] + 1, edge[1] + 1]);
+            let r_u = current_area.contains_key(&[edge[0] - 1, edge[1] + 1]);
+            let l_d = current_area.contains_key(&[edge[0] + 1, edge[1] - 1]);
+            let l_u = current_area.contains_key(&[edge[0] - 1, edge[1] - 1]);
+            if r_u
+                && grid[edge[0] - 1][edge[1] + 1] == current
+                && grid[edge[0]][edge[1] + 1] != current
+                && grid[edge[0] - 1][edge[1]] == current
+            {
+                *result.entry([edge[0], edge[1] + 1]).or_insert(0) += 1;
+            }
+            if l_u
+                && grid[edge[0] - 1][edge[1] - 1] == current
+                && grid[edge[0]][edge[1] - 1] != current
+                && grid[edge[0] - 1][edge[1]] == current
+            {
+                *result.entry([edge[0], edge[1] - 1]).or_insert(0) += 1;
+            }
+            if r_d
+                && grid[edge[0] + 1][edge[1] + 1] == current
+                && grid[edge[0] + 1][edge[1]] == current
+                && grid[edge[0]][edge[1] + 1] != current
+            {
+                *result.entry([edge[0], edge[1] + 1]).or_insert(0) += 1;
+            }
+            if l_d
+                && grid[edge[0] + 1][edge[1] - 1] == current
+                && grid[edge[0] + 1][edge[1]] == current
+                && grid[edge[0]][edge[1] - 1] != current
+            {
+                *result.entry([edge[0], edge[1] - 1]).or_insert(0) += 1;
+            }
         }
     }
+    for (cordinate, val) in &result {
+        grid_clone[cordinate[0]][cordinate[1]] = char::from_digit(*val, 10).unwrap();
+    }
+    // for line in grid_clone {
+    //     println!("{:?}", line);
+    // }
+    result.into_values().sum::<u32>()
 }
 
 #[cfg(test)]
@@ -145,7 +182,6 @@ EEEC";
         let result = solve(input);
         assert_eq!(result, 80);
     }
-
     #[test]
     fn test_2() {
         let input = "EEEEE
@@ -156,15 +192,15 @@ EEEEE";
         let result = solve(input);
         assert_eq!(result, 236);
     }
-    // #[test]
-    // fn test_3() {
-    //     let input = "AAAAAA
-    // AAABBA
-    // AAABBA
-    // ABBAAA
-    // ABBAAA
-    // AAAAAA";
-    //     let result = solve(input);
-    //     assert_eq!(result, 368);
-    // }
+    #[test]
+    fn test_3() {
+        let input = "AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA";
+        let result = solve(input);
+        assert_eq!(result, 368);
+    }
 }

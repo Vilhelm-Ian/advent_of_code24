@@ -9,18 +9,27 @@ fn main() {
 pub fn solve(input: &str) -> ([i32; 4], u64) {
     let mut numbers = parse(input);
     let mut res = HashMap::new();
+    let primes = [19, 23, 29, 31];
     numbers.into_iter().for_each(|mut num| {
         let mut que = [0; 4];
         let mut prev = 0;
         let mut map = HashMap::new();
         for i in 0..2000 {
+            let mut m = [0, 0, 0, 0];
             let next = next_number(num);
             if i == 0 {
                 prev = num;
                 continue;
             }
             que = [que[1], que[2], que[3], num as i32 % 10 - prev as i32 % 10];
-            let mut m = [0; 4];
+            que.iter()
+                .zip(&primes)
+                .map(|(num, prime)| num + 9 * prime)
+                .for_each(|n| println!("{n}"));
+            println!("\n");
+            if i > 60 {
+                panic!("here");
+            }
             if i > 5 {
                 m = que;
             }

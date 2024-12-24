@@ -41,11 +41,7 @@ pub fn solve(input: &str) -> i64 {
     result
 }
 
-fn find_combinations(
-    towel: &str,
-    designs: &HashSet<&str>,
-    mut seen: &mut HashMap<String, i64>,
-) -> i64 {
+fn find_combinations(towel: &str, designs: &HashSet<&str>) -> i64 {
     if let Some(res) = seen.get(towel) {
         return *res;
     }
@@ -58,7 +54,7 @@ fn find_combinations(
             continue;
         }
         if i <= towel.len() && designs.contains(&towel[..i]) {
-            result += find_combinations(&towel[i..], designs, &mut seen);
+            result += find_combinations(&towel[i..], designs);
         }
     }
     *seen.entry(towel.to_string()).or_insert(0) += result;

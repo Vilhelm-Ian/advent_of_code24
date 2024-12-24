@@ -4,7 +4,7 @@ use std::ops::Deref;
 
 fn main() {
     let input = include_str!("./input.txt");
-    breath_first_search_real();
+    // breath_first_search_real();
     // let result = solve(input);
     // println!("{:?}", result);
 }
@@ -31,16 +31,13 @@ fn solve(input: &str) -> i32 {
     0
 }
 
-fn breath_first_search_real() {
+fn breath_first_search_real(target: Vec<char>) -> Vec<char> {
     let instructions = ['>', '<', '^', 'v', 'A'];
     let mut que = VecDeque::new();
     instructions
         .iter()
         .for_each(|instruction| que.push_front(vec![*instruction]));
-    let target = vec![
-        'v', '<', '<', 'A', '>', '>', '^', 'A', '<', 'A', '>', 'A', 'v', 'A', '<', '^', 'A', 'A',
-        '>', 'A', '<', 'v', 'A', 'A', 'A', '>', '^', 'A',
-    ];
+    let target = vec!['<', 'A'];
     let mut map = HashMap::new();
     let mut seen = HashSet::new();
     while let Some(commands) = que.pop_back() {
@@ -54,8 +51,8 @@ fn breath_first_search_real() {
                 continue;
             }
             if new_command == target {
-                // println!("{:?}", new_command);
-                break;
+                println!("{:?}", commands);
+                return commands;
             };
             let mut brk = false;
             for i in 0..new_command.len() {
@@ -81,6 +78,7 @@ fn breath_first_search_real() {
             // que.push()
         };
     }
+    panic!("didn't find");
 }
 
 fn is_opposite(a: char, b: char) -> bool {
@@ -203,13 +201,22 @@ fn direction_from_distances(a: Cordinate, b: Cordinate) -> Direction {
     [a[0] as i32 - b[0] as i32, a[1] as i32 - b[1] as i32]
 }
 
+fn move_robot() {
+    let a_3 = vec!['<', 'A'];
+    let a_6 = vec!['^', 'A'];
+    let a_6_9 = vec!['^', '^', 'A'];
+    breath_first_search_real(a_3);
+    breath_first_search_real(a_6);
+    breath_first_search_real(a_6_9);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn it_works() {
         let result = 2 + 1;
-        breath_first_search_real();
+        // breath_first_search_real();
         assert_eq!(result, 4);
     }
 }
